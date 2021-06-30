@@ -87,6 +87,16 @@ void MOV(struct InstructionList* instructionList, char reg[], char value[]) // A
     insertInstruction(instructionList, mov); // Appends the generated instruction to the instruction list.
 }
 
+void printOutput(struct InstructionList* instructionList) // Appensd the print output instruction to the instruction list.
+{
+    char mov[20] = "POP DX\n";
+
+    char interrupt[] = "INT 21h\n";
+
+    insertInstruction(instructionList, mov);
+    insertInstruction(instructionList, interrupt);
+}
+
 void POP(struct InstructionList* instructionList, char reg[]) // Appends POP operation to the given instruction list and register.
 {
     // The relevant string imitating the instruction of the operation is initialised and then the register value is concatenated.
@@ -245,6 +255,8 @@ struct InstructionList* convertPostfixToAssembly(char* postfixExpression, int as
 
     if(!assemblerType) // If an online assembler is used that does not support OS instructions, no OS instructions are added,
     {
+        printOutput(instructionList);
+
         returnToOS(instructionList); // Append the return to OS instruction to the list of instructions.
     }
 

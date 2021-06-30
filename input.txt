@@ -1,1 +1,1 @@
-3a3*((4edb+2ad))*5bcd
+A * B + C * D 
