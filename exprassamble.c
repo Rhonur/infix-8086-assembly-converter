@@ -3,6 +3,10 @@
 #include <stdlib.h>
 #include <ctype.h>
 
+// SWE.514 Project - 2021 Spring
+// Author: Onur Demirkale
+// Student number: 2020719180
+
 // ==== Data structures. ====
 
 struct Stack // A struct to serve as a stack when converting infix notation to postfix notation.
@@ -110,7 +114,7 @@ void PUSH(struct InstructionList* instructionList, char value[]) // Appends PUSH
 
 void MUL(struct InstructionList* instructionList, char CX[], char AX[]) // Appends MUL operation to the given instruction list with the given registers.
 {
-    // The MUL instruction should be performed on two registers that are on top of the stack, so the POP operation is called twice, once for the given register and once for the accumulator register.
+    // The MUL instruction should be performed on two registers that are on top of the stack, so the POP sub-routine is called twice, once for the given register and once for the accumulator register.
 
     POP(instructionList, CX);
     POP(instructionList, AX);
@@ -130,7 +134,7 @@ void MUL(struct InstructionList* instructionList, char CX[], char AX[]) // Appen
  
 void ADD(struct InstructionList* instructionList, char CX[], char AX[]) // Appends ADD operation to the given instruction list with the given registers.
 {
-    // The ADD instruction should be performed on two registers that are on top of the stack, so the POP operation is called twice, once for the given register and once for the accumulator register.
+    // The ADD instruction should be performed on two registers that are on top of the stack, so the POP sub-routine is called twice, once for the given register and once for the accumulator register.
 
     POP(instructionList, CX);
     POP(instructionList, AX);
@@ -154,7 +158,7 @@ void DIV(struct InstructionList* instructionList, char CX[], char AX[])
 {
     MOV(instructionList, "DX", "0"); // 0 is moved to DX, to make sure that the division performed is word by word. (project limit is 16 bits)
 
-    // The MUL instruction should be performed on two registers that are on top of the stack, so the POP operation is called twice, once for the given register and once for the accumulator register.
+    // The MUL instruction should be performed on two registers that are on top of the stack, so the POP sub-routine is called twice, once for the given register and once for the accumulator register.
 
     POP(instructionList, CX);
     POP(instructionList, AX);
@@ -195,7 +199,7 @@ struct InstructionList* convertPostfixToAssembly(char* postfixExpression) // Use
 
             operand[n] = postfixExpression[i];
             
-            while(isxdigit(postfixExpression[i+1])) // If the next character is an operand as well, keep placing the operands until a non-hexadecimal value is encountered.
+            while(isxdigit(postfixExpression[i+1])) // If the next character is an operand as well, keep placing the operands on the array until a non-hexadecimal value is encountered.
             {
                 i++;
                 n++;
@@ -293,7 +297,7 @@ char popStack(struct Stack *stack) // Pop an item from the stack. If the stack i
     {
         return stack->stackArray[stack->topOfStack--]; // Return the item on top of the stack and then decrement the stack counter.
     }
-    return 'X'; // ! signifies than an error has occured and the stack
+    return 'X'; // Signifies that an error has occured.
 }
 
 void pushStack(struct Stack *stack, char operand) // Push an item on the stack.
@@ -335,7 +339,7 @@ int checkOperand(char c) // Function used to check if the passed in character is
 
 //In order to seperate operands while evaluating the postfix expression into assembly code, spaces are added between operands durıng infix to postfix conversıon.
 
-int convertInfixToPostfix(char *inputExpression, char* outputExpression) // Used to convert infix notation to postfix notation. During this function the input expression is reassigned to become postfix expression.
+int convertInfixToPostfix(char *inputExpression, char* outputExpression) // Used to convert infix notation to postfix notation. Accepts the input expression to read and the output experssion to write to as parameters.
 {
     int i, k;
 
@@ -347,52 +351,46 @@ int convertInfixToPostfix(char *inputExpression, char* outputExpression) // Used
         return -1;
     }
 
-    for (i = 0, k = -1; inputExpression[i]; ++i) // Iterate through the expression and check every single character.
+    for (i = 0, k = -1; inputExpression[i]; ++i) // Iterate through the expression left to right and check every single character.
     {
-        if(inputExpression[i] == ' ')
+        if(inputExpression[i] == ' ') // Ignore empty spaces.
         {
             continue;
         }
 
-        if (isxdigit(inputExpression[i])) // If the character is an operand, add it to output by replacing the character of the expression.
+        if (isxdigit(inputExpression[i])) // If the character is an operand, add it to the output expression.
         {
             outputExpression[++k] = inputExpression[i];  
         }
-        else if (inputExpression[i] == '(') // If the current character is an opening parenthesis, push it to the stack.
+        else if (inputExpression[i] == '(') // Else, if the current character is an opening parenthesis, push it to the stack.
         {
             pushStack(stack, inputExpression[i]);
         }
-        else if (inputExpression[i] == ')') // Else if the current character is a closing parenthesis, pop from the stack and replace the character of the current expression until an opening parenthesis is encounterd.
+        else if (inputExpression[i] == ')') // If a closing paranthesis is encountered, stack must be cleared and necessary operands/operators must be added to the output expression.
         {
-            while (!isVoid(stack) && checkTopItem(stack) != '(') 
+            while (!isVoid(stack) && checkTopItem(stack) != '(') // If an opening paranthesis is not on top of the paranthesis yet, then there must be operands or operators that should be written to output expression.
             {
-                outputExpression[++k] = popStack(stack);
+                outputExpression[++k] = popStack(stack); // Pop and add operands/operators into the output expression.
             }
 
-            if (!isVoid(stack) && checkTopItem(stack) != '(')
-            {
-                printf("\nEncountered an invalid character!\n");
-                return -1; 
-            }
-
-            else
-            {
-                popStack(stack);
-            }
+            popStack(stack); // Pop the encountered paranthesis to be removed from the stack.
         }
         else // An operator must have been encountered if no operand is encountered so far.
         {
-            outputExpression[++k] = ' ';
-            while (!isVoid(stack) && checkPrecedence(inputExpression[i]) < checkPrecedence(checkTopItem(stack))) // Encounterd operators on the stack whose precedences are equal to or greater than the precedence of the current operator are popped and added to output by replacing the character in the current expression.
+            outputExpression[++k] = ' '; // If an operator is encountered, to seperate operands from one another, leave a space between them.
+
+            // While the precedence of the operator in the input expression is lesser than the operators on the stack, pop all operators on the stack and add to the output expression.
+
+            while (!isVoid(stack) && checkPrecedence(inputExpression[i]) < checkPrecedence(checkTopItem(stack)))
             {
                 outputExpression[++k] = popStack(stack);
             }
 
-            pushStack(stack, inputExpression[i]); // The current operator is pushed to the stack.
+            pushStack(stack, inputExpression[i]); // Finally, the current operator is pushed to the stack.
         }
     }
 
-    while (!isVoid(stack)) // Pop all the operators from the stack until the stack is empty.
+    while (!isVoid(stack)) // Now that the iteration of the expression is over, pop all the operators from the stack until the stack is empty.
     {
         outputExpression[++k] = popStack(stack);
     }
@@ -416,7 +414,7 @@ void writeAssemblyFile(char* assemblyInstructions) // Prints the contents of the
 
     FILE *fp;
 
-    fp = fopen ("result.txt", "w");   
+    fp = fopen ("result.asm", "w");   
 
     for (i = 0; assemblyInstructions[i] != '\0'; i++) 
     {
@@ -445,11 +443,25 @@ void readInput(char *inputExpression) // Reads the input.txt file generated by t
 
 int main()
 {
+    int outputFormat = 0; // 0 for native, 1 for online.
+
+    int assemblerType = 0; // 0 for native, 1 for online.
+
     struct InstructionList* assemblyInstructions; // Initialize the struct to store generated assembly instructions.
 
     char outputExpression[100]; // Char array to store output expression that contains the postfix expression.
 
     char inputExpression[100]; // Char array to store infix experession input of the user.
+
+    printf("\nPlease choose the output extension: \n");
+    printf("0- .asm\n");
+    printf("1- .txt\n");
+    scanf("%d", &outputFormat);
+
+    printf("\nPlease choose the assembler type. Online 8086 assembly emulator may not include OS commands.: \n");
+    printf("0- Native\n");
+    printf("1- Online\n");
+    scanf("%d", &assemblerType);
 
     readInput(inputExpression); // Reads input from the input file created by the user in the same directory.
 
