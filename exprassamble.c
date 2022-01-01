@@ -3,10 +3,6 @@
 #include <stdlib.h>
 #include <ctype.h>
 
-// SWE.514 Project - 2021 Spring
-// Author: Onur Demirkale
-// Student number: 2020719180
-
 // ==== Data structures. ====
 
 /**
